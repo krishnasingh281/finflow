@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FinFlow — Transaction Integrity Dashboard</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <header class="topbar">
+        <div class="brand">
+            <span class="brand-icon">⚡</span>
+            <span class="brand-name">FinFlow</span>
+        </div>
+        <p class="brand-sub">Transaction Integrity & Leaderboard System</p>
+    </header>
+
+    <main class="container">
+
+        <!-- ===== SECTION 1: POST /transaction ===== -->
+        <section class="card" id="section-transaction">
+            <div class="card-header">
+                <span class="method-badge post">POST</span>
+                <h2>/api/transaction</h2>
+            </div>
+            <p class="card-desc">Submit a credit or debit transaction. An idempotency key prevents duplicate processing on retry.</p>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="tx-userid">User ID</label>
+                    <input type="text" id="tx-userid" placeholder="e.g. user_alice" />
+                </div>
+
+                <div class="form-group">
+                    <label for="tx-amount">Amount</label>
+                    <input type="number" id="tx-amount" placeholder="e.g. 500.00" min="0.01" step="0.01" />
+                </div>
+
+                <div class="form-group">
+                    <label for="tx-type">Transaction Type</label>
+                    <select id="tx-type">
+                        <option value="credit">Credit</option>
+                        <option value="debit">Debit</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="tx-desc">Description <span class="optional">(optional)</span></label>
+                    <input type="text" id="tx-desc" placeholder="e.g. Monthly salary" />
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="tx-ikey">
+                        Idempotency Key
+                        <span class="optional">(optional — same key = no duplicate)</span>
+                    </label>
+                    <div class="input-row">
+                        <input type="text" id="tx-ikey" placeholder="Leave blank to auto-generate" />
+                        <button class="btn-ghost" onclick="generateKey()">Generate</button>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-primary" onclick="submitTransaction()">Submit Transaction</button>
+
+            <div id="tx-result" class="result-box hidden"></div>
+        </section>
+
+        <!-- ===== SECTION 2: GET /summary/:userId ===== -->
+        <section class="card" id="section-summary">
+            <div class="card-header">
+                <span class="method-badge get">GET</span>
+                <h2>/api/summary/:userId</h2>
+            </div>
+            <p class="card-desc">Fetch aggregated stats for any user including their current leaderboard rank.</p>
+
+            <div class="input-row">
+                <input type="text" id="summary-userid" placeholder="Enter User ID" />
+                <button class="btn-primary" onclick="fetchSummary()">Fetch Summary</button>
+            </div>
+
+            <div id="summary-result" class="result-box hidden"></div>
+
+            <!-- summary stats cards render here -->
+            <div id="summary-stats" class="stats-grid hidden">
+                <div class="stat-card green">
+                    <p class="stat-label">Total Credit</p>
+                    <p class="stat-value" id="stat-credit">—</p>
+                </div>
+                <div class="stat-card red">
+                    <p class="stat-label">Total Debit</p>
+                    <p class="stat-value" id="stat-debit">—</p>
+                </div>
+                <div class="stat-card blue">
+                    <p class="stat-label">Net Balance</p>
+                    <p class="stat-value" id="stat-net">—</p>
+                </div>
+                <div class="stat-card purple">
+                    <p class="stat-label">Transactions</p>
+                    <p class="stat-value" id="stat-count">—</p>
+                </div>
+                <div class="stat-card orange">
+                    <p class="stat-label">Reliability Score</p>
+                    <p class="stat-value" id="stat-reliability">—</p>
+                </div>
+                <div class="stat-card gold">
+                    <p class="stat-label">Rank Score</p>
+                    <p class="stat-value" id="stat-score">—</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== SECTION 3: GET /ranking ===== -->
+        <section class="card" id="section-ranking">
+            <div class="card-header">
+                <span class="method-badge get">GET</span>
+                <h2>/api/ranking</h2>
+            </div>
+            <p class="card-desc">
+                Live leaderboard. Score = <strong>40% volume</strong> + <strong>30% activity</strong> + <strong>30% reliability</strong>.
+                Spam and invalid requests penalize your reliability score.
+            </p>
+
+            <div class="controls-row">
+                <label>
+                    Show top
+                    <select id="ranking-limit" onchange="fetchRanking()">
+                        <option value="5">5</option>
+                        <option value="10" selected>10</option>
+                        <option value="20">20</option>
+                    </select>
+                    users
+                </label>
+                <button class="btn-primary" onclick="fetchRanking()">Refresh Leaderboard</button>
+            </div>
+
+            <div id="ranking-result" class="result-box hidden"></div>
+
+            <div id="ranking-table-wrapper" class="hidden">
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>User</th>
+                            <th>Score</th>
+                            <th>Net Balance</th>
+                            <th>Transactions</th>
+                            <th>Reliability</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ranking-tbody"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <p>FinFlow v1.0 — Built with Django REST Framework · Multi-factor ranking · Idempotent transactions</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
