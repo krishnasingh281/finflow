@@ -7,13 +7,13 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-secret-key-change-in-produ
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']
+# Render automatically sets RENDER_EXTERNAL_HOSTNAME to your service's public URL.
+# We add it to ALLOWED_HOSTS so Django doesn't return 400 on health checks.
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
 
-# only needed on Render
-import os
-if os.environ.get('RENDER'):
-    DEBUG = False
-    ALLOWED_HOSTS = ['*.onrender.com']
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -84,7 +84,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Allow all origins for now — tighten this after deployment
 CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
