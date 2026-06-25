@@ -2,7 +2,7 @@
 // For local testing, keep it as localhost:8000
 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://127.0.0.1:8000/api'
-    : 'https://YOUR_CLOUD_RUN_URL/api';  // <-- update this after deployment
+    : 'https://finflow-api.onrender.com/api';  // <-- update this after deployment
 
 
 // =====================================================
